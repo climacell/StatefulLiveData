@@ -122,6 +122,36 @@ fun <T> StatefulLiveData<T>.observeLoading(owner: LifecycleOwner, observer: Obse
     })
 }
 
+fun <X, Y> StatefulLiveData<X>.map(mapFunction: (X) -> Y): StatefulLiveData<Y> {
+    return StatefulTransformations.map(this, mapFunction)
+}
+
+/**
+ * Returns a [StatefulLiveData] mapped from the input [@receiver] [StatefulLiveData], while preserving its original state.
+ * In the case where the original state is [StatefulData.Success], the [mapFunction] is applied to each value set
+ * on [@receiver] [StatefulLiveData]. In other cases, the original state is preserved with its original data (i.e the original [StatefulData].)
+ *
+ * In the case where the original state is [StatefulData.Success],
+ * the returned [StatefulLiveData] delegates to the most recent [StatefulLiveData] created by
+ * calling [mapFunction] with the most recent value set to [@receiver] [StatefulLiveData], without
+ * changing the reference. This way, [mapFunction] can change the 'backing'
+ * [StatefulLiveData] transparently to any observer registered to the [StatefulLiveData] returned
+ * by [switchMap]. In other cases, the original state is preserved with its original data (i.e the original [StatefulData].)
+ *
+ * @receiver the [StatefulLiveData] to map from
+ * @param mapFunction the lambda to apply to each value set on [@receiver] [StatefulLiveData] in case its state is [StatefulData.Success],
+ *                    in order to create a new delegate StatefulLiveData for the returned one
+ *
+ * @param [X] the generic type parameter of [@receiver] [StatefulLiveData]
+ * @param [Y] the generic type parameter of the returned [StatefulLiveData]
+ * @return a StatefulLiveData mapped from [@receiver] [StatefulLiveData] to type [Y] by delegating to the StatefulLiveData returned by
+ *         applying [mapFunction] to each value set in case the state is [StatefulData.Success].
+ */
+@MainThread
+fun <X, Y> StatefulLiveData<X>.switchMap(mapFunction: (X) -> StatefulLiveData<Y>): StatefulLiveData<Y> {
+    return StatefulTransformations.switchMap(this, mapFunction)
+}
+
 /**
  * Maps StatefulLiveData to LiveData:
  *
