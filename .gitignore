@@ -13,6 +13,3 @@
 /build
 /captures
 .externalNativeBuild
-local.libs.gradle
-local.libs.settings.gradle
-local.libs.properties.gradle
