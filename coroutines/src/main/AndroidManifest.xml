@@ -1,2 +1,1 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="co.climacell.statefulLiveData.coroutines" />
+<manifest package="co.climacell.statefulLiveData.coroutines" />
