@@ -6,10 +6,10 @@ import co.climacell.statefulLiveData.core.StatefulData
 import co.climacell.statefulLiveData.core.StatefulLiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 object CoroutineStatefulTransformations {
+
     /**
      * Performs a transformation to this [StatefulLiveData] when state is
      * [StatefulData.Success][StatefulData.Success] from type [X] to [Y] similar to [map].
@@ -32,16 +32,10 @@ object CoroutineStatefulTransformations {
         mediator.addSource(source) {
             when (it) {
                 is StatefulData.Success -> {
-                    coroutineScope.launch(Dispatchers.Default) {
-                        try {
-                            kotlinx.coroutines.coroutineScope {
-                                val result = mapFunction(it.data)
-                                withContext(Dispatchers.Main) {
-                                    mediator.value = StatefulData.Success(result)
-                                }
-                            }
-                        } catch (e: Exception) {
-                            mediator.value = StatefulData.Error(e)
+                    coroutineScope.launchAndForget(Dispatchers.Default) {
+                        val result = mapFunction(it.data)
+                        withContext(Dispatchers.Main) {
+                            mediator.value = StatefulData.Success(result)
                         }
                     }
                 }
