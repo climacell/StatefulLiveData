@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.Transformations
 
 /**
  * StatefulLiveData builds upon [LiveData] and acts very much alike, but it's also data state-aware.
@@ -43,6 +44,23 @@ fun <T> MutableStatefulLiveData<T>.putError(error: Throwable) {
 
 fun <T> MutableStatefulLiveData<T>.putLoading(loadingData: Any? = null) {
     this.putValue(StatefulData.Loading(loadingData))
+}
+
+/**
+ * Returns a [StatefulLiveData] mapped from the [@receiver] [StatefulLiveData], while preserving its original state.
+ * In the case where the original state is [StatefulData.Success], the [mapFunction] is applied to each value set
+ * on the receiver. In other cases, the original state is preserved with its original data (i.e the original [StatefulData].)
+ *
+ * @receiver the [StatefulLiveData] to map from
+ * @param mapFunction the lambda to apply to each value set on [@receiver] [StatefulLiveData] in case its state is [StatefulData.Success]
+ *
+ * @param [X] the generic type parameter of [@receiver] [StatefulLiveData]
+ * @param [Y] the generic type parameter of the returned [StatefulLiveData]
+ * @return a StatefulLiveData mapped from [@receiver] [StatefulLiveData] to type [Y] by applying
+ * [mapFunction] to each value set in case the state is [StatefulData.Success].
+ */
+fun <T> MutableStatefulLiveData<T>.putLoading(loadingFunction: (() -> Any?)) {
+    this.putLoading(loadingFunction())
 }
 
 /**
@@ -103,3 +121,53 @@ fun <T> StatefulLiveData<T>.observeLoading(owner: LifecycleOwner, observer: Obse
         }
     })
 }
+
+/**
+ * Maps StatefulLiveData to LiveData:
+ *
+ * When State is:
+ *
+ * • [StatefulData.Success][StatefulData.Success] -> returns data of type [T]
+ *
+ * • [StatefulData.Error][StatefulData.Error] -> returns result of overridden [errorMapFunction] or null
+ *
+ * • [StatefulData.Loading][StatefulData.Loading] -> returns result of overridden [loadingMapFunction] or null
+ *
+ * • To add support to other states of [StatefulData] override [fallbackMapFunction] (default result for other types is null).
+ *
+ * @return A [LiveData] of data type [T]
+ */
+fun <T> StatefulLiveData<T>.mapToLiveData(
+    errorMapFunction: (Throwable) -> T? = { _ -> null },
+    loadingMapFunction: (Any?) -> T? = { _ -> null },
+    fallbackMapFunction: () -> T? = { null }
+): LiveData<T> {
+    return Transformations.map(this) {
+        when (it) {
+            is StatefulData.Success -> it.data
+            is StatefulData.Error -> errorMapFunction(it.throwable)
+            is StatefulData.Loading -> loadingMapFunction(it.loadingData)
+            else -> fallbackMapFunction()
+        }
+    }
+}
+
+@MainThread
+inline fun <reified T> StatefulLiveData<Any>.mapToTypedStatefulLiveData(): StatefulLiveData<T> {
+    return Transformations.switchMap(this) {
+        val mutableLiveData = MutableStatefulLiveData<T>()
+        when (it) {
+            is StatefulData.Success -> {
+                if (it.data is T) {
+                    mutableLiveData.putData(it.data as T)
+                } else {
+                    mutableLiveData.putError(StatefulLiveDataTypeMismatchException(T::class.java, it.data))
+                }
+            }
+            is StatefulData.Loading -> mutableLiveData.putLoading { it.loadingData }
+            is StatefulData.Error -> mutableLiveData.putError(it.throwable)
+        }
+        mutableLiveData
+    }
+}
+
