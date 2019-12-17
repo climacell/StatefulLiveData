@@ -152,6 +152,25 @@ fun <X, Y> StatefulLiveData<X>.switchMap(mapFunction: (X) -> StatefulLiveData<Y>
     return StatefulTransformations.switchMap(this, mapFunction)
 }
 
+@MainThread
+inline fun <reified T> StatefulLiveData<Any>.mapToTypedStatefulLiveData(): StatefulLiveData<T> {
+    return Transformations.switchMap(this) {
+        val mutableLiveData = MutableStatefulLiveData<T>()
+        when (it) {
+            is StatefulData.Success -> {
+                if (it.data is T) {
+                    mutableLiveData.putData(it.data as T)
+                } else {
+                    mutableLiveData.putError(StatefulLiveDataTypeMismatchException(T::class.java, it.data))
+                }
+            }
+            is StatefulData.Loading -> mutableLiveData.putLoading { it.loadingData }
+            is StatefulData.Error -> mutableLiveData.putError(it.throwable)
+        }
+        mutableLiveData
+    }
+}
+
 /**
  * Maps StatefulLiveData to LiveData:
  *
@@ -181,23 +200,3 @@ fun <T> StatefulLiveData<T>.mapToLiveData(
         }
     }
 }
-
-@MainThread
-inline fun <reified T> StatefulLiveData<Any>.mapToTypedStatefulLiveData(): StatefulLiveData<T> {
-    return Transformations.switchMap(this) {
-        val mutableLiveData = MutableStatefulLiveData<T>()
-        when (it) {
-            is StatefulData.Success -> {
-                if (it.data is T) {
-                    mutableLiveData.putData(it.data as T)
-                } else {
-                    mutableLiveData.putError(StatefulLiveDataTypeMismatchException(T::class.java, it.data))
-                }
-            }
-            is StatefulData.Loading -> mutableLiveData.putLoading { it.loadingData }
-            is StatefulData.Error -> mutableLiveData.putError(it.throwable)
-        }
-        mutableLiveData
-    }
-}
-
