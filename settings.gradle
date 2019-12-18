@@ -1,1 +1,1 @@
-include ':core', ':coroutines', ':google-tasks'
+include ':core', ':coroutines', ':google-tasks', ':retrofit'
