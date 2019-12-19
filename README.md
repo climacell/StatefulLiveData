@@ -2,7 +2,7 @@
 # StatefulLiveData
 [![Release](https://jitpack.io/v/climacell/statefullivedata.svg?style=flat-square)](https://jitpack.io/#climacell/statefullivedata) [![API](https://img.shields.io/badge/API-14%2B-blue.svg?style=flat-square)](https://android-arsenal.com/api?level=14)
 
-**StatefulLiveData** is a lean, yet powerful tool that harnesses the capabilities of LiveData and enhances them, enabling the observer to distinguish between different states the data can be in, suck as  ***Success***, ***Loading*** and ***Error***.
+**StatefulLiveData** is a lean, yet powerful tool that harnesses the capabilities of LiveData and enhances them, enabling the observer to distinguish between different states the data can be in, such as  ***Success***, ***Loading*** and ***Error***.
 
 StatefulLiveData is open-ended, which gives you possibility to create more types of StatefulData, as well as extensions and functionality.
 ## Quick start guide
@@ -77,7 +77,7 @@ Also make sure to look at the kdoc in the library.
 Coming soon.
 ## Modules
 There are 4 modules comprising StatefulLiveData:
- - [Core](https://github.com/climacell/StatefulLiveData/tree/master/core) - The essential components that of the StatefulLiveData framework.
- - [Coroutines](https://github.com/climacell/StatefulLiveData/tree/master/coroutines)  - Additional functionalities to further enhance StatefulLiveData.
+ - [Core](https://github.com/climacell/StatefulLiveData/tree/master/core) - The essential components of the StatefulLiveData framework.
+ - [Coroutines](https://github.com/climacell/StatefulLiveData/tree/master/coroutines)  - Additional functionalities to further enhance StatefulLiveData with coroutines.
  - [Google-Tasks](https://github.com/climacell/StatefulLiveData/tree/master/google-tasks) - Provides easy conversions from Tasks to StatefulLiveData.
  - [Retrofit](https://github.com/climacell/StatefulLiveData/tree/master/retrofit) - A Retrofit adapter to convert calls to StatefulLiveData.
