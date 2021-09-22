@@ -190,7 +190,7 @@ fun <T> StatefulLiveData<T>.mapToLiveData(
     errorMapFunction: (Throwable) -> T? = { _ -> null },
     loadingMapFunction: (Any?) -> T? = { _ -> null },
     fallbackMapFunction: () -> T? = { null }
-): LiveData<T?> {
+): LiveData<T> {
     return Transformations.map(this) {
         when (it) {
             is StatefulData.Success -> it.data
