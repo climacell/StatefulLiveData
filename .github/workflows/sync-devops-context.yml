@@ -1,0 +1,52 @@
+name: Sync DevOps Context
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '.github/workflows/**'
+      - 'deploy/**'
+      - 'terraform/**'
+      - 'azure_terraform/**'
+      - 'terraform-sql/**'
+      - 'modules/**'
+      - 'apps/**'
+      - 'Dockerfile'
+      - 'Makefile'
+      - 'package.json'
+      - 'requirements.txt'
+      - 'go.mod'
+      - 'Cargo.toml'
+      - 'Chart.yaml'
+      - 'values.yaml'
+      - 'workflow-templates/**'
+      - 'workflows/**'
+      - 'datadog/**'
+      - 'kubernetes/**'
+      - 'helm-values/**'
+      - 'templates/**'
+      - 'providers/**'
+      - 'llm-docs/**'
+  workflow_dispatch:
+
+concurrency:
+  group: sync-devops-context-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync DevOps Context
+    uses: climacell/cicd-shared-libraries/.github/workflows/sync-devops-context.yml@master
+    with:
+      service_name: ${{ github.event.repository.name }}
+      # team is auto-detected from cc-team--* GitHub topic; override here if needed
+      target_repo: 'climacell/devops-central-knowledge-base'
+      target_branch: 'main'
+    secrets:
+      ORG_AUTH_TOKEN: ${{ secrets.ORG_AUTH_TOKEN }}
+      CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+      DD_API_KEY: ${{ secrets.DD_KEY }}
