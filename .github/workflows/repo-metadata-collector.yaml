@@ -1,0 +1,39 @@
+# Repository Metadata Collector
+# Copy this file to .github/workflows/metadata-collector.yaml in your repository
+# This workflow analyzes your repo structure and sends metadata to Datadog
+
+name: Repository Metadata Collection
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - '.github/workflows/repo-metadata-collector.yaml'
+  schedule:
+    # Run daily at 11:50 AM UTC
+    - cron: '50 11 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  collect-metadata:
+    name: Collect Repository Metadata
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Write access is required for CSV sync (updating files in the repo) and topics sync (modifying repository topics). If you do not use these features, you may reduce this to 'read'.
+      id-token: write # Required if using GCP auth for terraform state
+      pull-requests: write # Required for creating CSV update PRs
+    steps:
+      - name: Collect and send metadata
+        uses: climacell/cicd-shared-libraries/workflows/repo-metadata-collector@master
+        with:
+          DD_API_KEY: ${{ secrets.DD_KEY }}
+          # Use ORG_AUTH_TOKEN only if the default github.token does not have sufficient permissions (e.g., for organization-level or cross-repository operations).
+          # In most cases, the default token is sufficient: GITHUB_TOKEN: ${{ github.token }}
+          # Only set GITHUB_TOKEN to secrets.ORG_AUTH_TOKEN if required.
+          GITHUB_TOKEN: ${{ secrets.ORG_AUTH_TOKEN }}
+          GCP_WIP: ${{ secrets.GCP_WIP }}
+          enable_tf_state: 'true'
+          enable_topics_sync: 'true'
+          env_name: 'production'
